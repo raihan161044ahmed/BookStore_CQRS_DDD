@@ -20,10 +20,8 @@ public static class ServiceCollectionExtensions
         services.AddDbContext<BookStoreDbContext>(options =>
         options.UseSqlServer(configuration.GetConnectionString("DefaultConnection")));
 
-
         // Settings
         services.Configure<JwtSettings>(configuration.GetSection("JwtSettings"));
-
 
         // Repositories
         services.AddScoped<IBookRepository, BookRepository>();
@@ -34,6 +32,8 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<IJwtTokenService, JwtTokenService>();
         services.AddSingleton<IPasswordHasher, PasswordHasherAdapter>();
         services.AddScoped<IUserRepository, UserRepository>();
+        services.AddScoped<IOrderRepository, OrderRepository>();
+        services.AddScoped<IPaymentRepository, PaymentRepository>();
 
 
         return services;
