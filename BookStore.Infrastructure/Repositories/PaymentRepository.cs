@@ -11,14 +11,12 @@ using Microsoft.EntityFrameworkCore;
 
 namespace BookStore.Infrastructure.Repositories
 {
-    public class PaymentRepository : IPaymentRepository
+    public class PaymentRepository(BookStoreDbContext db) : IPaymentRepository
     {
-        private readonly BookStoreDbContext _db;
+        private readonly BookStoreDbContext _db = db;
 
-        public PaymentRepository(BookStoreDbContext db)
-        {
-            _db = db;
-        }
+        public async Task<IEnumerable<Payment>> GetAllAsync() =>
+            await _db.Payments.ToListAsync();
 
         public async Task<Payment?> GetByIdAsync(Guid id) =>
             await _db.Payments.FirstOrDefaultAsync(p => p.Id == id);
@@ -31,6 +29,20 @@ namespace BookStore.Infrastructure.Repositories
             _db.Payments.Add(payment);
             await _db.SaveChangesAsync();
             return payment.Id;
+        }
+
+        public async Task UpdateAsync(Payment payment)
+        {
+            _db.Payments.Update(payment);
+            await _db.SaveChangesAsync();
+        }
+
+        public async Task DeleteAsync(Guid id)
+        {
+            var payment = await _db.Payments.FindAsync(id);
+            if (payment is null) return;
+            _db.Payments.Remove(payment);
+            await _db.SaveChangesAsync();
         }
     }
 }

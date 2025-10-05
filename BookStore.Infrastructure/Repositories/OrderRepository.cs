@@ -6,21 +6,16 @@ using Microsoft.EntityFrameworkCore;
 
 namespace BookStore.Infrastructure.Repositories
 {
-    public class OrderRepository : IOrderRepository
+    public class OrderRepository(BookStoreDbContext db) : IOrderRepository
     {
-        private readonly BookStoreDbContext _db;
+        private readonly BookStoreDbContext _db = db;
 
-        public OrderRepository(BookStoreDbContext db)
-        {
-            _db = db;
-        }
+        public async Task<IEnumerable<Order>> GetAllAsync() =>
+            await _db.Orders.Include(o => o.Items).ToListAsync();
 
         public async Task<Order?> GetByIdAsync(Guid id) =>
             await _db.Orders.Include(o => o.Items)
                             .FirstOrDefaultAsync(o => o.Id == id);
-
-        public async Task<IEnumerable<Order>> GetAllAsync() =>
-            await _db.Orders.Include(o => o.Items).ToListAsync();
 
         public async Task<Guid> CreateAsync(Order order)
         {
@@ -38,11 +33,9 @@ namespace BookStore.Infrastructure.Repositories
         public async Task DeleteAsync(Guid id)
         {
             var order = await _db.Orders.FindAsync(id);
-            if (order != null)
-            {
-                _db.Orders.Remove(order);
-                await _db.SaveChangesAsync();
-            }
+            if (order is null) return;
+            _db.Orders.Remove(order);
+            await _db.SaveChangesAsync();
         }
     }
 }
